@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "excisionMargin": {
+      "type": ["string", "null"],
+      "enum": ["RRM", "NRM", null]
+    },
+    "closestRelevantMargin": {
+      "type": ["number", "null"]
+    }
+  },
+  "required": ["excisionMargin", "closestRelevantMargin"]
+}

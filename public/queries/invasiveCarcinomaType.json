@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "invasiveCarcinomaType": {
+      "type": ["string", "null"],
+      "enum": ["NST", "PST", "MTT", "MIX", "OTH", null]
+    },
+    "invasiveCarcinomaPSTSubtype": {
+      "type": ["string", "null"],
+      "enum": ["Pap", "Tub", "Crb", "Muc", "Med", "Lob", null]
+    },
+    "invasiveCarcinomaMIXSubtype": {
+      "type": ["string", "null"],
+      "enum": ["ductal", "lobular", "other"]
+    },
+    "tumourExtent": {
+      "description": "Determine if the report specifies the tumour extent.",
+      "type": ["string", "null"],
+      "enum": ["LOC", "MIF", "UNI", null],
+      "enumDescriptions": [
+        "Assign 'LOC': if the tumour extent was specified as Localised.",
+        "Assign 'MIF': if the tumour extent was specified as Multifocal (or Multiple foci, Multi invasive foci, etc.).",
+        "Assign 'UNI': if the tumour extent was specified as Unifocal.",
+        "Assign null: if the tumour extent was not explicitly specified."
+      ]
+    }
+  },
+  "required": ["invasiveCarcinomaType", "invasiveCarcinomaPSTSubtype", "invasiveCarcinomaMIXSubtype", "tumourExtent"]
+}
