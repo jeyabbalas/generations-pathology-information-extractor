@@ -2,7 +2,7 @@
   "type": "object",
   "properties": {
     "sizeWholeTumour": {
-      "description": "If the size (in mm) of the whole tumour is specified in the report, assign the value to this variable. Otherwise, assign null.",
+      "description": "If the size (in mm) of the whole tumour is specified in the report, assign the value to this variable. Otherwise, assign null. Note: ignore sizes of individual foci; only report the size of the whole tumour, if reported. Otherwise, assign null.",
       "type": ["number", "null"]
     },
     "sizeDcisOnly": {

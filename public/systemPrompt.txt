@@ -27,7 +27,7 @@ To accomplish this task, follow the steps outlined below:
         - JSON Schema constraints: After listing the snippets from the pathology report, list the description and all constraints specified in the JSON Schema for this variable.
 
 2. Return the result JSON:
-	- Using the relevant information you have extracted, construct a JSON object with the most likely correct values assigned to each requested key.
+	- Using the relevant information you have extracted and addressing all the constraints specified by each variable's JSON Schema, construct a JSON object with the most likely correct values assigned to each requested key.
 	- Title this section as "RESULT:" and present the JSON object, enclosed in triple backticks, as shown:
 ```json
 {
