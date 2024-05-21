@@ -2,8 +2,8 @@
   "type": "object",
   "properties": {
     "icdMorphologyCode": {
-      "description": "If the pathology report mentions any ICD-O Morphology codes, extract them all into an array of strings, and assign the array to this variable. Do not list the same code multiple times. The list should only contain a unique set of ICD-O codes. Format each ICD-O code as a 5-digit integer prefixed by the letter 'M' i.e., 'M#####'. Out of the five digits, the first four digits must range from 8000 to 9989. The fifth digit can be any of the following digits— {0, 1, 2, 3, 6, 9}. Remove any symbols, if present (e.g. '-' or '/'). For example, if the morphology code was reported as— 'M-8500/3', 'M-85003', '85003', '8500/3', etc.— reformat it to 'M85003' when inserting into the array for this variable's value. Assign null (instead of an empty array) if there are no ICD-O codes mentioned in the report or if none can be determined from the information contained in the report.",
-      "type": "array",
+      "description": "If the pathology report mentions any ICD-O Morphology codes, extract them all into an array of strings, and assign the array to this variable. Do not list the same code multiple times. The list should only contain a unique set of ICD-O codes. Format each ICD-O code as a 5-digit integer prefixed by the letter 'M' i.e., 'M#####'. Out of the five digits, the first four digits must range from 8000 to 9989. The fifth digit can be any of the following digits— {0, 1, 2, 3, 6, 9}. Remove any symbols, if present (e.g. '-' or '/'). For example, if the morphology code was reported as— 'M-8500/3', 'M-85003', '85003', '8500/3', etc.— reformat it to 'M85003' when inserting into the array for this variable's value. Assign null (instead of an empty array): if there are no ICD-O codes mentioned in the report or if none can be determined from the information contained in the report.",
+      "type": ["array", "null"],
       "items": {
         "type": "string",
         "pattern": "^M(8[0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9])[012369]$"
