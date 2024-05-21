@@ -21,7 +21,7 @@
         "Assign 'LOC': if the tumour extent was specified as Localised.",
         "Assign 'MIF': if the tumour extent was specified as Multifocal (or Multiple foci, Multi invasive foci, etc.).",
         "Assign 'UNI': if the tumour extent was specified as Unifocal.",
-        "Assign null: if the tumour extent was not explicitly specified."
+        "Assign null: if the tumour extent was not explicitly specified in the report."
       ]
     }
   },
