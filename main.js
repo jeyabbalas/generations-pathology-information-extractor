@@ -492,6 +492,21 @@ function generateLinkedTable(headers, data, context, targetDiv) {
 }
 
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+
+const processFileWithDelay = async (file, delayTime) => {
+    await delay(delayTime);
+    let extraction = await pie.extractInformation(file.data);
+    const fileNameParts = file.name.split('.');
+    extraction = {
+        ['id']: fileNameParts.length > 1 ? fileNameParts.slice(0, -1).join('.') : file.name,
+        ...extraction
+    };
+    extractedInformation.push(extraction);
+};
+
+
 submitBtn.addEventListener('click', async (e) => {
     const originalHTML = submitBtn.innerHTML;
     submitBtn.innerHTML = `
