@@ -7,7 +7,7 @@
       "enum": ["NST", "PST", "MTT", "MIX", "OTH", null],
       "enumDescriptions": [
         "Assign 'NST': if the invasive carcinoma type is specified as of 'No Special Type' (NST). When there is no mixed tumour component, invasive/infiltrating ductal carcinoma (IDC) implies No Special Type.",
-        "Assign 'PST': if the invasive carcinoma type is specified as of 'Pure Special Type'. When there is no mixed tumour component, a single invasive component such as— only invasive lobular carcinoma (ILC), only invasive tubular carcinoma, only invasive cribriform carcinoma, only invasive mucinous carcinoma, only papillary carcinoma, only medullary breast cancer, etc.— each imply that the invasive carcinoma is of Pure Special Type.",
+        "Assign 'PST': if the invasive carcinoma type is specified as of 'Pure Special Type'. When there is no mixed tumour component and the tumour type is not described as type other, a single invasive component such as— only invasive lobular carcinoma (ILC), only invasive tubular carcinoma, only invasive cribriform carcinoma, only invasive mucinous carcinoma, only papillary carcinoma, only medullary breast cancer, etc.— each imply that the invasive carcinoma is of Pure Special Type.",
         "Assign 'MTT': if the invasive carcinoma type is specified as of 'Mixed' type, and the mixed components were specifically ductal (NST) and lobular.",
         "Assign 'MIX': if the invasive carcinoma type is specified as of 'Mixed' type, and the mixed components were anything other than the pair— ductal (NST) and lobular. For example, mixed ductal and mucinous, mixed ductal and tubular, mixed lobular and cribriform, etc.",
         "Assign 'OTH': if the invasive carcinoma type is specified as of 'Other' type.",
@@ -25,7 +25,7 @@
         "Assign 'Crb': if the invasive carcinoma type is specified as 'Pure Special Type' and the component type is specified as 'Cribriform'.",
         "Assign 'Muc': if the invasive carcinoma type is specified as 'Pure Special Type' and the component type is specified as 'Mucinous'.",
         "Assign 'Med': if the invasive carcinoma type is specified as 'Pure Special Type' and the component type is specified as 'Medullary'.",
-        "Assign null: if the invasive carcinoma type is not specified as of 'Pure Special Type' in the report or the component type is not specified in the report."
+        "Assign null: if the invasive carcinoma type is not specified as of 'Pure Special Type' in the report (and so variable 'invasiveCarcinomaType' is not 'PST') or the component type is not specified in the report."
       ]
     },
     "tumourExtent": {
