@@ -2,7 +2,7 @@ import './style.css'
 import pieLogo from './pie.svg';
 import githubLogo from './github.svg';
 
-import { manageOpenAIApiKey, InformationExtractor, jsonldContext } from './pathologyInformationExtractor.js';
+import {manageOpenAIApiKey, InformationExtractor, jsonldContext} from './pathologyInformationExtractor.js';
 
 
 function ui(divID) {
@@ -193,7 +193,7 @@ const submitApiKeyBtn = document.getElementById('submit-api-key');
 const modelsListDropdown = document.getElementById('llmModel');
 const llmConfigMessageContainer = document.getElementById('api-key-message-container');
 
-forgetApiKeyBtn.addEventListener('click', function() {
+forgetApiKeyBtn.addEventListener('click', function () {
     apiKeyInput.value = '';
     while (llmConfigMessageContainer.firstChild) {
         llmConfigMessageContainer.removeChild(llmConfigMessageContainer.firstChild);
@@ -203,7 +203,7 @@ forgetApiKeyBtn.addEventListener('click', function() {
 });
 
 
-modelsListDropdown.addEventListener('change', function() {
+modelsListDropdown.addEventListener('change', function () {
     if (pie !== null) {
         pie.setModel(this.value);
     }
@@ -321,6 +321,7 @@ async function handleFiles(files) {
 
 
 const fileDropArea = document.getElementById('file-drop-area');
+
 function preventDefaults(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -474,7 +475,7 @@ function generateLinkedTable(headers, data, context, targetDiv) {
                 cellLink.href = `${context['id']['@id']}${cellValue}`;
             } else {
                 cellLink.href = (context[header]['@vocab'] && context[header]['@vocab'][cellValue]) ?
-                                context[header]['@vocab'][cellValue] : '#';
+                    context[header]['@vocab'][cellValue] : '#';
             }
             cellLink.textContent = cellValue;
             cellLink.target = '_blank';
@@ -490,21 +491,6 @@ function generateLinkedTable(headers, data, context, targetDiv) {
     tableWrapper.appendChild(table);
     targetDiv.appendChild(tableWrapper);
 }
-
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-
-const processFileWithDelay = async (file, delayTime) => {
-    await delay(delayTime);
-    let extraction = await pie.extractInformation(file.data);
-    const fileNameParts = file.name.split('.');
-    extraction = {
-        ['id']: fileNameParts.length > 1 ? fileNameParts.slice(0, -1).join('.') : file.name,
-        ...extraction
-    };
-    extractedInformation.push(extraction);
-};
 
 
 submitBtn.addEventListener('click', async (e) => {
@@ -529,16 +515,28 @@ submitBtn.addEventListener('click', async (e) => {
     extractedInformation.length = 0;
     let promises = [];
 
-    fileData.forEach(file => {
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    const delayTime = 6000;  // 1 file per 6 seconds
+
+    const processFileWithDelay = async (file, delayTime) => {
+        await delay(delayTime);
+        let extraction = await pie.extractInformation(file.data);
+        const fileNameParts = file.name.split('.');
+        extraction = {
+            ['id']: fileNameParts.length > 1 ? fileNameParts.slice(0, -1).join('.') : file.name,
+            ...extraction
+        };
+        extractedInformation.push(extraction);
+    };
+
+    fileData.forEach((file, index) => {
         let extractPromise = new Promise(async (resolve, reject) => {
-            let extraction = await pie.extractInformation(file.data);
-            const fileNameParts = file.name.split('.');
-            extraction = {
-                ['id']: fileNameParts.length > 1 ? fileNameParts.slice(0, -1).join('.') : file.name,
-                ...extraction
+            try {
+                await processFileWithDelay(file, index * delayTime);
+                resolve();
+            } catch (error) {
+                reject(error);
             }
-            extractedInformation.push(extraction);
-            resolve();
         });
 
         promises.push(extractPromise);

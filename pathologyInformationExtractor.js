@@ -4,8 +4,10 @@ import {OpenAI} from 'https://cdn.skypack.dev/openai@4.38.5?min';
 const systemPromptPath = '/systemPrompt.txt';
 const systemPrompt = await fetchTextFile(systemPromptPath);
 const queriesPath = '/queries/';
-//const queryFiles = ['icdo.json'];
-const queryFiles = ['breastCancerType.json'];
+const queryFiles = [
+    'specimen.json', 'breastCancerType.json', 'dcisGrowthPattern.json', 'invasiveCarcinomaType.json', 'tumourSize.json',
+    'grading.json', 'tnmStaging.json', 'icdo.json'
+];
 const queries = await fetchJsonFiles(queriesPath, queryFiles);
 const prompts = queries.map((query) => convertQueryToPrompt(query));
 
