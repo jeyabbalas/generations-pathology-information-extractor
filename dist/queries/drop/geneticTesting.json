@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "brca1": {
+      "description": "Determine if the pathology report mentions results from genetic testing for mutations in BRCA1.",
+      "type": ["string", "null"],
+      "enum": ["Y", "N", null],
+      "enumDescriptions": [
+        "Assign 'Y': if the report indicates that mutations were detected in BRCA1.",
+        "Assign, 'N': if the report indicates that mutations were not detected in BRCA1.",
+        "Assign null: if there is no mention of results from BRCA1 genetic testing in the report or if the BRCA1 mutation status cannot be determined from the information in the report."
+      ]
+    },
+    "brca2": {
+      "description": "Determine if the pathology report mentions results from genetic testing for mutations in BRCA2.",
+      "type": ["string", "null"],
+      "enum": ["Y", "N", null],
+      "enumDescriptions": [
+        "Assign 'Y': if the report indicates that mutations were detected in BRCA2.",
+        "Assign, 'N': if the report indicates that mutations were not detected in BRCA2.",
+        "Assign null: if there is no mention of results from BRCA2 genetic testing in the report or if the BRCA2 mutation status cannot be determined from the information in the report."
+      ]
+    }
+  },
+  "required": ["brca1", "brca2"]
+}

@@ -1,14 +1,26 @@
 import {OpenAI} from 'https://cdn.skypack.dev/openai@4.38.5?min';
 
 
-const systemPromptPath = '/systemPrompt.txt';
-const systemPrompt = await fetchTextFile(systemPromptPath);
-const queriesPath = '/queries/';
+
+let systemPrompt;
 const queryFiles = [
     'lymphNodes1.json', 'lymphNodes2.json', 'excision.json', 'ihc1.json', 'ihc2.json'
 ];
-const queries = await fetchJsonFiles(queriesPath, queryFiles);
-const prompts = queries.map((query) => convertQueryToPrompt(query));
+let queries;
+let prompts;
+
+async function setup() {
+    const systemPromptPath = '/systemPrompt.txt';
+    systemPrompt = await fetchTextFile(systemPromptPath);
+
+    const queriesPath = '/queries/';
+    queries = await fetchJsonFiles(queriesPath, queryFiles);
+    prompts = queries.map((query) => convertQueryToPrompt(query));
+}
+
+setup().catch(error => {
+    console.error('Error reading the system prompt and schemas:', error);
+});
 
 
 async function fetchTextFile(filePath) {
