@@ -516,7 +516,7 @@ submitBtn.addEventListener('click', async (e) => {
     let promises = [];
 
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    const delayTime = 6000;  // 1 file per 6 seconds
+    const delayTime = 3000;
 
     const processFileWithDelay = async (file, delayTime) => {
         await delay(delayTime);
@@ -572,7 +572,7 @@ submitBtn.addEventListener('click', async (e) => {
     btnContainer.appendChild(downloadBtn);
     resultsDiv.appendChild(btnContainer);
 
-    // // Harmonization
+    // Harmonization
     // const harmonizedData = {
     //     "@context": jsonldContext,
     //     "@graph": extractedInformation

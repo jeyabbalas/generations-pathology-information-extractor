@@ -5,8 +5,7 @@ const systemPromptPath = '/systemPrompt.txt';
 const systemPrompt = await fetchTextFile(systemPromptPath);
 const queriesPath = '/queries/';
 const queryFiles = [
-    'specimen.json', 'breastCancerType.json', 'dcisGrowthPattern.json', 'invasiveCarcinomaType.json', 'tumourSize.json',
-    'grading.json', 'tnmStaging.json', 'icdo.json'
+    'lymphNodes1.json', 'lymphNodes2.json', 'excision.json', 'ihc1.json', 'ihc2.json'
 ];
 const queries = await fetchJsonFiles(queriesPath, queryFiles);
 const prompts = queries.map((query) => convertQueryToPrompt(query));
