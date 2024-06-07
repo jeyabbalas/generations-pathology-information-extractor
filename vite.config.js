@@ -1,4 +1,6 @@
 // vite.config.js
+export const base = '/generations-pathology-information-extractor/';
+
 export default {
-  base: '/generations-pathology-information-extractor/'
-}
+  base
+};

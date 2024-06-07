@@ -1,5 +1,5 @@
 import {OpenAI} from 'https://cdn.skypack.dev/openai@4.38.5?min';
-
+import { base as basePath } from './vite.config.js'; 
 
 
 let systemPrompt;
@@ -10,10 +10,10 @@ let queries;
 let prompts;
 
 async function setup() {
-    const systemPromptPath = '/systemPrompt.txt';
+    const systemPromptPath = `${basePath}systemPrompt.txt`;
     systemPrompt = await fetchTextFile(systemPromptPath);
 
-    const queriesPath = '/queries/';
+    const queriesPath = `${basePath}queries/`;
     queries = await fetchJsonFiles(queriesPath, queryFiles);
     prompts = queries.map((query) => convertQueryToPrompt(query));
 }
