@@ -516,7 +516,7 @@ submitBtn.addEventListener('click', async (e) => {
     let promises = [];
 
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    const delayTime = 3000;
+    const delayTime = 0;
 
     const processFileWithDelay = async (file, delayTime) => {
         await delay(delayTime);

@@ -1,19 +1,21 @@
 import {OpenAI} from 'https://cdn.skypack.dev/openai@4.38.5?min';
-import { base as basePath } from './vite.config.js'; 
+const BASE_URL = '/generations-pathology-information-extractor';
 
 
 let systemPrompt;
 const queryFiles = [
-    'lymphNodes1.json', 'lymphNodes2.json', 'excision.json', 'ihc1.json', 'ihc2.json'
+    'specimen.json', 'breastCancerType.json', 'dcisGrowthPattern.json', 'invasiveCarcinomaType.json',
+    'ihc1.json', 'ihc2.json', 'lymphNodes1.json', 'lymphNodes2.json',
+    'excision.json', 'tumourSize.json', 'grading.json', 'tnmStaging.json', 'icdo.json'
 ];
 let queries;
 let prompts;
 
 async function setup() {
-    const systemPromptPath = `${basePath}systemPrompt.txt`;
+    const systemPromptPath = BASE_URL + '/systemPrompt.txt';
     systemPrompt = await fetchTextFile(systemPromptPath);
 
-    const queriesPath = `${basePath}queries/`;
+    const queriesPath = BASE_URL + '/queries/';
     queries = await fetchJsonFiles(queriesPath, queryFiles);
     prompts = queries.map((query) => convertQueryToPrompt(query));
 }
