@@ -1,23 +1,31 @@
 import {OpenAI} from 'https://cdn.skypack.dev/openai@4.38.5?min';
+
 const BASE_URL = '/generations-pathology-information-extractor';
 
 
+const systemPromptPath = BASE_URL + '/systemPrompt.txt';
 let systemPrompt;
+
+const queriesPath = BASE_URL + '/queries/';
 const queryFiles = [
-    'specimen.json', 'breastCancerType.json', 'dcisGrowthPattern.json', 'invasiveCarcinomaType.json',
-    'ihc1.json', 'ihc2.json', 'lymphNodes1.json', 'lymphNodes2.json',
-    'excision.json', 'tumourSize.json', 'grading.json', 'tnmStaging.json', 'icdo.json'
+    'breastCancerType.json'
 ];
 let queries;
 let prompts;
 
-async function setup() {
-    const systemPromptPath = BASE_URL + '/systemPrompt.txt';
-    systemPrompt = await fetchTextFile(systemPromptPath);
+const jsonldContextPath = BASE_URL + '/jsonldContexts/';
+const jsonldContextFiles = [
+    'breastCancerType.json'
+];
+let jsonldContexts;
+let jsonldContext;
 
-    const queriesPath = BASE_URL + '/queries/';
+async function setup() {
+    systemPrompt = await fetchTextFile(systemPromptPath);
     queries = await fetchJsonFiles(queriesPath, queryFiles);
     prompts = queries.map((query) => convertQueryToPrompt(query));
+    jsonldContexts = await fetchJsonFiles(jsonldContextPath, jsonldContextFiles);
+    jsonldContext = mergeJsonLdContexts(jsonldContexts);
 }
 
 setup().catch(error => {
@@ -74,6 +82,20 @@ ${JSON.stringify(query, null, 4)}
 \`\`\`
 `;
     return prompt;
+}
+
+
+function mergeJsonLdContexts(jsonldContexts) {
+    return jsonldContexts.reduce((acc, current) => {
+        const currentContext = current["@context"];
+        for (let key in currentContext) {
+            if (acc[key]) {
+                continue;
+            }
+            acc[key] = currentContext[key];
+        }
+        return acc;
+    }, {});
 }
 
 
@@ -176,7 +198,7 @@ class InformationExtractor {
                         role: 'system',
                         content: `${this.systemPrompt}\n\n\nBREAST CANCER PATHOLOGY REPORT:\n\n"""\n${report}"""\n\n`
                     },
-                    { role: 'user', content: prompt.prompt }
+                    {role: 'user', content: prompt.prompt}
                 ],
                 temperature: this.temperature,
                 seed: this.seed + attempt
@@ -196,122 +218,6 @@ class InformationExtractor {
         return prompt.default;
     }
 }
-
-
-const jsonldContext = {
-    "id": {
-        "@id": "http://example.org/GenerationsStudy/subjects/",
-        "@container": "@id"
-    },
-    "side": {
-        "@id": "http://snomed.info/id/384727002",
-        "@type": "@id",
-        "@vocab": {
-            "L": "http://snomed.info/id/7771000",
-            "R": "http://snomed.info/id/24028007"
-        }
-    },
-    "screenDetected": {
-        "@id": "http://snomed.info/id/171176006",
-        "@type": "@id",
-        "@vocab": {
-            "Y": "http://snomed.info/id/373066001",
-            "N": "http://snomed.info/id/373067005"
-        }
-    },
-    "specimenType": {
-        "@id": "http://snomed.info/id/122548005",
-        "@type": "@id",
-        "@vocab": {
-            "WBB": "http://snomed.info/id/9911007",
-            "WLE": "http://snomed.info/id/237371007",
-            "M": "http://snomed.info/id/1231734007",
-            "NBO": "http://snomed.info/id/21911005",
-            "OB": "http://snomed.info/id/736615002",
-            "Re-ex": "http://snomed.info/id/65854006",
-            "SE": "http://snomed.info/id/237370008",
-            "TMP": "http://snomed.info/id/33496007",
-            "FNA": "http://snomed.info/id/387736007",
-            "LB": "http://snomed.info/id/122548005"
-        }
-    },
-    "specimenWeight": "http://snomed.info/id/371506001",
-    "axillaryProcedure": {
-        "@id": "http://snomed.info/id/301796003",
-        "@type": "@id",
-        "@vocab": {
-            "ANC": "http://snomed.info/id/79544006",
-            "ANS": "http://snomed.info/id/178294003",
-            "NLN": "http://snomed.info/id/416237000",
-            "OSNA": "http://snomed.info/id/1285485007",
-            "SNB": "http://snomed.info/id/396487001"
-        }
-    },
-    "postNeoadjuvantChemo": {
-        "@id": "http://snomed.info/id/1279827005",
-        "@type": "@id",
-        "@vocab": {
-            "C": "http://snomed.info/id/1259200004",
-            "E": "http://snomed.info/id/169413002"
-        }
-    },
-    "cis": {
-        "@id": "http://snomed.info/id/189336000",
-        "@type": "@id",
-        "@vocab": {
-            "P": "http://snomed.info/id/52101004",
-            "N": "http://snomed.info/id/2667000"
-        }
-    },
-    "dcis": {
-        "@id": "http://snomed.info/id/109889007",
-        "@type": "@id",
-        "@vocab": {
-            "P": "http://snomed.info/id/52101004",
-            "N": "http://snomed.info/id/2667000"
-        }
-    },
-    "lcis": {
-        "@id": "http://snomed.info/id/109888004",
-        "@type": "@id",
-        "@vocab": {
-            "P": "http://snomed.info/id/52101004",
-            "N": "http://snomed.info/id/2667000"
-        }
-    },
-    "pleomorphicLCIS": {
-        "@id": "http://snomed.info/id/762260000",
-        "@type": "@id",
-        "@vocab": {
-            "P": "http://snomed.info/id/52101004",
-            "N": "http://snomed.info/id/2667000"
-        }
-    },
-    "pagetsDisease": {
-        "@id": "http://snomed.info/id/2985005",
-        "@type": "@id",
-        "@vocab": {
-            "P": "http://snomed.info/id/52101004",
-            "N": "http://snomed.info/id/2667000"
-        }
-    },
-    "microinvasion": {
-        "@id": "http://snomed.info/id/443933007",
-        "@type": "@id",
-        "@vocab": {
-            "P": "http://snomed.info/id/52101004",
-            "N": "http://snomed.info/id/2667000"
-        }
-    },
-    "invasiveCarcinoma": {
-        "@id": "http://snomed.info/id/713609000",
-        "@type": "@id",
-        "@vocab": {
-            "P": "http://snomed.info/id/52101004",
-            "N": "http://snomed.info/id/2667000"
-        }
-    }
-};
 
 
 export {
