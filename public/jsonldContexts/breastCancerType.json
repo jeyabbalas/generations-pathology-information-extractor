@@ -1,9 +1,9 @@
 {
   "@context": {
     "snomed": "https://browser.ihtsdotools.org/?perspective=full&edition=MAIN/2024-06-01&release=&languages=en&latestRedirect=false&conceptId1=",
-    "unmapped": "http://example.org/GenerationsStudy/unmapped/",
+    "custom": "https://example.org/generations-study/custom-ontology#",
     "id": {
-      "@id": "http://example.org/GenerationsStudy/subjects/",
+      "@id": "https://example.org/generations-study/subjects/",
       "@container": "@id"
     },
     "cis": {
