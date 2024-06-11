@@ -434,7 +434,7 @@ function generateLinkedTable(headers, data, context, targetDiv) {
     tableWrapper.className = 'relative overflow-x-auto shadow-md sm:rounded-lg my-4 w-full';
 
     const table = document.createElement('table');
-    table.className = 'w-full text-sm text-left text-lime-500 underline';
+    table.className = 'w-full text-sm text-left text-lime-500';
 
     // Table header
     const thead = document.createElement('thead');
@@ -449,40 +449,44 @@ function generateLinkedTable(headers, data, context, targetDiv) {
 
     const getResolvedHeaderLink = (context, header) => {
         if (context[header]['@id']) {
-            if (curies.some(curie => context[header]['@id'].includes(curie))) {
+            if (curies.some(curie => context[header]['@id'].startsWith(curie))) {
                 return resolveCurie(context[header]['@id']);
             }
             return context[header]['@id'];
         }
         if (context[header]) {
-            if (curies.some(curie => context[header].includes(curie))) {
+            if (curies.some(curie => context[header].startsWith(curie))) {
                 return resolveCurie(context[header]);
             }
             return context[header];
         }
-        return '#';
+        return 'javascript:;';
     }
 
     const getResolvedCellValueLink = (context, header, value) => {
         if (value === '-') {
-            return '#';
+            return 'javascript:;';
         }
         if (header === 'id') {
             return `${context[header]['@id']}${value}`;
         }
-        if (context[header]?.['@vocab'] && context[header]['@vocab'][value]) {
-            if (curies.some(curie => context[header]['@vocab'][value].includes(curie))) {
-                return resolveCurie(context[header]['@vocab'][value]);
+        if (context[header]?.['@vocab']) {
+            if (context[header]['@vocab'][value]) {
+                if (curies.some(curie => context[header]['@vocab'][value].startsWith(curie))) {
+                    return resolveCurie(context[header]['@vocab'][value]);
+                }
+                return context[header]['@vocab'][value];
+            } else {
+                return 'javascript:;';
             }
-            return context[header]['@vocab'][value];
         }
         if (context[header]) {
-            if (curies.some(curie => context[header].includes(curie))) {
+            if (curies.some(curie => context[header].startsWith(curie))) {
                 return resolveCurie(context[header]);
             }
             return context[header];
         }
-        return '#';
+        return 'javascript:;';
     }
 
     headers.forEach(header => {
@@ -516,6 +520,13 @@ function generateLinkedTable(headers, data, context, targetDiv) {
             cellLink.href = getResolvedCellValueLink(context, header, cellValue);
             cellLink.textContent = cellValue;
             cellLink.target = '_blank';
+            if (cellLink.href === 'javascript:;') {
+                cellLink.removeAttribute('href');
+                cellLink.className = 'text-gray-500';
+            } else {
+                cellLink.className = 'underline';
+            }
+
             td.appendChild(cellLink);
 
             tr.appendChild(td);
