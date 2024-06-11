@@ -427,6 +427,7 @@ function generateTable(headers, data, targetDiv) {
     targetDiv.appendChild(tableWrapper);
 }
 
+
 function generateLinkedTable(headers, data, context, targetDiv) {
     targetDiv.innerHTML = '';
     const tableWrapper = document.createElement('div');
@@ -440,12 +441,56 @@ function generateLinkedTable(headers, data, context, targetDiv) {
     thead.className = 'text-xs text-lime-300 uppercase underline bg-green-900';
     const theadRow = document.createElement('tr');
 
+    const curies = ['snomed', 'custom'];
+    const resolveCurie = (curie) => {
+        const [prefix, suffix] = curie.split(':');
+        return context[prefix] + suffix;
+    };
+
+    const getResolvedHeaderLink = (context, header) => {
+        if (context[header]['@id']) {
+            if (curies.some(curie => context[header]['@id'].includes(curie))) {
+                return resolveCurie(context[header]['@id']);
+            }
+            return context[header]['@id'];
+        }
+        if (context[header]) {
+            if (curies.some(curie => context[header].includes(curie))) {
+                return resolveCurie(context[header]);
+            }
+            return context[header];
+        }
+        return '#';
+    }
+
+    const getResolvedCellValueLink = (context, header, value) => {
+        if (value === '-') {
+            return '#';
+        }
+        if (header === 'id') {
+            return `${context[header]['@id']}${value}`;
+        }
+        if (context[header]?.['@vocab'] && context[header]['@vocab'][value]) {
+            if (curies.some(curie => context[header]['@vocab'][value].includes(curie))) {
+                return resolveCurie(context[header]['@vocab'][value]);
+            }
+            return context[header]['@vocab'][value];
+        }
+        if (context[header]) {
+            if (curies.some(curie => context[header].includes(curie))) {
+                return resolveCurie(context[header]);
+            }
+            return context[header];
+        }
+        return '#';
+    }
+
     headers.forEach(header => {
         const th = document.createElement('th');
         th.scope = 'col';
         th.className = 'px-6 py-3';
         const headerLink = document.createElement('a');
-        headerLink.href = context[header]['@id'] || context[header] || '#';
+        headerLink.href = getResolvedHeaderLink(context, header);
         headerLink.textContent = header;
         headerLink.target = '_blank';
         th.appendChild(headerLink);
@@ -468,15 +513,7 @@ function generateLinkedTable(headers, data, context, targetDiv) {
 
             const cellValue = rowData[header] ?? '-';
             const cellLink = document.createElement('a');
-            if (header === 'SpecimenWeight') {
-                // Link the same URI as the header for SpecimenWeight
-                cellLink.href = context[header]['@id'] || context[header] || '#';
-            } else if (header === 'id') {
-                cellLink.href = `${context['id']['@id']}${cellValue}`;
-            } else {
-                cellLink.href = (context[header]['@vocab'] && context[header]['@vocab'][cellValue]) ?
-                    context[header]['@vocab'][cellValue] : '#';
-            }
+            cellLink.href = getResolvedCellValueLink(context, header, cellValue);
             cellLink.textContent = cellValue;
             cellLink.target = '_blank';
             td.appendChild(cellLink);
@@ -509,6 +546,8 @@ submitBtn.addEventListener('click', async (e) => {
 
     if (fileData.length === 0) {
         alert('Please upload at least one file.');
+        submitBtn.innerHTML = originalHTML;
+        submitBtn.disabled = false;
         return;
     }
 
@@ -573,38 +612,38 @@ submitBtn.addEventListener('click', async (e) => {
     resultsDiv.appendChild(btnContainer);
 
     // Harmonization
-    // const harmonizedData = {
-    //     "@context": jsonldContext,
-    //     "@graph": extractedInformation
-    // };
-    //
-    // const harmonizedTableWrapper = document.createElement('div');
-    // harmonizedTableWrapper.className = 'flex justify-center w-full';
-    // generateLinkedTable(
-    //     Object.keys(harmonizedData["@graph"][0]),
-    //     harmonizedData["@graph"],
-    //     harmonizedData["@context"],
-    //     harmonizedTableWrapper
-    // );
-    // standardizationDiv.appendChild(harmonizedTableWrapper);
-    //
-    // // Download JSON-LD button
-    // const harmonizedBtnContainer = document.createElement('div');
-    // harmonizedBtnContainer.className = 'flex justify-center w-full my-2';
-    //
-    // const harmonizedDownloadBtn = document.createElement('button');
-    // harmonizedDownloadBtn.className = 'inline-flex justify-center rounded-md border border-transparent bg-green-800 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2';
-    // harmonizedDownloadBtn.textContent = 'Download as JSON-LD';
-    // harmonizedDownloadBtn.addEventListener('click', (e) => {
-    //     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(harmonizedData, null, 2));
-    //     const dlAnchorElem = document.createElement('a');
-    //     dlAnchorElem.setAttribute("href", dataStr);
-    //     dlAnchorElem.setAttribute("download", "harmonized_data.jsonld");
-    //     dlAnchorElem.click();
-    // });
-    //
-    // harmonizedBtnContainer.appendChild(harmonizedDownloadBtn);
-    // standardizationDiv.appendChild(harmonizedBtnContainer);
+    const harmonizedData = {
+        "@context": jsonldContext,
+        "@graph": extractedInformation
+    };
+
+    const harmonizedTableWrapper = document.createElement('div');
+    harmonizedTableWrapper.className = 'flex justify-center w-full';
+    generateLinkedTable(
+        Object.keys(harmonizedData["@graph"][0]),
+        harmonizedData["@graph"],
+        harmonizedData["@context"],
+        harmonizedTableWrapper
+    );
+    standardizationDiv.appendChild(harmonizedTableWrapper);
+
+    // Download JSON-LD button
+    const harmonizedBtnContainer = document.createElement('div');
+    harmonizedBtnContainer.className = 'flex justify-center w-full my-2';
+
+    const harmonizedDownloadBtn = document.createElement('button');
+    harmonizedDownloadBtn.className = 'inline-flex justify-center rounded-md border border-transparent bg-green-800 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2';
+    harmonizedDownloadBtn.textContent = 'Download as JSON-LD';
+    harmonizedDownloadBtn.addEventListener('click', (e) => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(harmonizedData, null, 2));
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "harmonized_data.jsonld");
+        dlAnchorElem.click();
+    });
+
+    harmonizedBtnContainer.appendChild(harmonizedDownloadBtn);
+    standardizationDiv.appendChild(harmonizedBtnContainer);
 
     submitBtn.innerHTML = originalHTML;
     submitBtn.disabled = false;
