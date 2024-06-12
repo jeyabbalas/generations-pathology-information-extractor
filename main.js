@@ -441,7 +441,7 @@ function generateLinkedTable(headers, data, context, targetDiv) {
     thead.className = 'text-xs text-lime-300 uppercase underline bg-green-900';
     const theadRow = document.createElement('tr');
 
-    const curies = ['snomed', 'custom'];
+    const curies = ['snomed', 'ncim', 'custom'];
     const resolveCurie = (curie) => {
         const [prefix, suffix] = curie.split(':');
         return context[prefix] + suffix;
