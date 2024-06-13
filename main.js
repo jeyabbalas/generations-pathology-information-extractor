@@ -347,10 +347,14 @@ function unhighlight(e) {
     fileDropArea.addEventListener(eventName, unhighlight, false);
 });
 
-function handleDrop(e) {
+async function handleDrop(e) {
     const dt = e.dataTransfer;
     const files = dt.files;
-    handleFiles(files);
+    try {
+        await handleFiles(files);
+    } catch (error) {
+        console.error('Error uploading files:', error);
+    }
 }
 
 fileDropArea.addEventListener('drop', handleDrop, false);
@@ -359,9 +363,13 @@ fileDropArea.addEventListener('drop', handleDrop, false);
 // File upload events
 const fileUpload = document.getElementById('file-upload');
 
-fileUpload.addEventListener('change', (e) => {
+fileUpload.addEventListener('change', async (e) => {
     const files = e.target.files;
-    handleFiles(files);
+    try {
+        await handleFiles(files);
+    } catch (error) {
+        console.error('Error uploading files:', error);
+    }
 });
 
 
@@ -489,6 +497,20 @@ function generateLinkedTable(headers, data, context, targetDiv) {
         return 'javascript:;';
     }
 
+    const appendLink = (td, context, header, value) => {
+        const cellLink = document.createElement('a');
+        cellLink.href = getResolvedCellValueLink(context, header, value);
+        cellLink.textContent = value;
+        cellLink.target = '_blank';
+        if (cellLink.href === 'javascript:;') {
+            cellLink.removeAttribute('href');
+            cellLink.className = 'text-gray-500';
+        } else {
+            cellLink.className = 'underline';
+        }
+        td.appendChild(cellLink);
+    }
+
     headers.forEach(header => {
         const th = document.createElement('th');
         th.scope = 'col';
@@ -516,18 +538,34 @@ function generateLinkedTable(headers, data, context, targetDiv) {
             td.className = 'px-4 py-2';
 
             const cellValue = rowData[header] ?? '-';
-            const cellLink = document.createElement('a');
-            cellLink.href = getResolvedCellValueLink(context, header, cellValue);
-            cellLink.textContent = cellValue;
-            cellLink.target = '_blank';
-            if (cellLink.href === 'javascript:;') {
-                cellLink.removeAttribute('href');
-                cellLink.className = 'text-gray-500';
-            } else {
-                cellLink.className = 'underline';
-            }
 
-            td.appendChild(cellLink);
+            if (Array.isArray(cellValue)) {
+                const openBracket = document.createTextNode('[');
+                const spanOpenBracket = document.createElement('span');
+                spanOpenBracket.className = 'text-gray-500';
+                spanOpenBracket.appendChild(openBracket);
+                td.appendChild(spanOpenBracket);
+
+                cellValue.forEach(value => {
+                    appendLink(td, context, header, value);
+                    const separator = document.createTextNode(', ');
+                    const spanSeparator = document.createElement('span');
+                    spanSeparator.className = 'text-gray-500';
+                    spanSeparator.appendChild(separator);
+                    td.appendChild(spanSeparator);
+                });
+
+                if (td.lastChild) {
+                    td.removeChild(td.lastChild);  // remove the last separator
+                    const closeBracket = document.createTextNode(']');
+                    const spanCloseBracket = document.createElement('span');
+                    spanCloseBracket.className = 'text-gray-500';
+                    spanCloseBracket.appendChild(closeBracket);
+                    td.appendChild(spanCloseBracket);
+                }
+            } else {
+                appendLink(td, context, header, cellValue);
+            }
 
             tr.appendChild(td);
         });
