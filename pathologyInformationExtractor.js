@@ -8,14 +8,18 @@ let systemPrompt;
 
 const queriesPath = BASE_URL + '/queries/';
 const queryFiles = [
-    'breastCancerType.json'
+    'specimen.json', 'excision.json', 'tumourSize.json', 'breastCancerType.json',
+    'lymphNodes1.json', 'ihc1.json', 'ihc2.json', 'tnmStaging.json',
+    'icdo.json'
 ];
 let queries;
 let prompts;
 
 const jsonldContextPath = BASE_URL + '/jsonldContexts/';
 const jsonldContextFiles = [
-    'breastCancerType.json'
+    'specimen.json', 'excision.json', 'tumourSize.json', 'breastCancerType.json',
+    'lymphNodes1.json', 'ihc1.json', 'ihc2.json', 'tnmStaging.json',
+    'icdo.json'
 ];
 let jsonldContexts;
 let jsonldContext;

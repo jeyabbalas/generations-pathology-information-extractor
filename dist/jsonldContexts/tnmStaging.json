@@ -5,14 +5,8 @@
       "@id": "https://example.org/generations-study/subjects/",
       "@container": "@id"
     },
-    "closestRelevantMargin": "snomed:371489008",
-    "excisionMargin": {
-      "@id": "snomed:395536008",
-      "@type": "@id",
-      "@vocab": {
-        "RRM": "snomed:370109009",
-        "NRM": "snomed:310342002"
-      }
-    }
+    "tStage": "snomed:78873005",
+    "nStage": "snomed:277206009",
+    "mStage": "snomed:277208005"
   }
 }
