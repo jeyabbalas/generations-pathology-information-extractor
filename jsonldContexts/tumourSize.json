@@ -5,14 +5,8 @@
       "@id": "https://example.org/generations-study/subjects/",
       "@container": "@id"
     },
-    "closestRelevantMargin": "snomed:371489008",
-    "excisionMargin": {
-      "@id": "snomed:395536008",
-      "@type": "@id",
-      "@vocab": {
-        "RRM": "snomed:370109009",
-        "NRM": "snomed:310342002"
-      }
-    }
+    "sizeWholeTumour": "snomed:263605001",
+    "sizeDcisOnly": "snomed:2710001000004109",
+    "sizeInvasiveTumour": "snomed:384630000"
   }
 }
