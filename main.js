@@ -54,7 +54,7 @@ function ui(divID) {
             <div class="mt-4 -space-y-px rounded-md flex flex-col items-center">
                 <div class="relative rounded-md rounded-b-none px-3 pb-1.5 pt-2.5 w-1/2 ring-1 ring-inset ring-gray-300 focus-within:z-10 focus-within:ring-2 focus-within:ring-green-600">
                     <label for="baseURL" class="block text-xs font-medium text-gray-900">Base URL</label>
-                    <input type="url" name="baseURL" id="baseURL" class="block w-full border-0 p-0 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 focus:border-0 sm:text-sm sm:leading-6" placeholder="http://localhost:8000/v1" value="https://api.openai.com/v1" required>
+                    <input type="url" name="baseURL" id="baseURL" class="block w-full border-0 p-0 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 focus:border-0 sm:text-sm sm:leading-6" placeholder="http://localhost:8000/v1" value="http://Bedroc-Proxy-zvnYn33xBbrP-141596195.us-west-2.elb.amazonaws.com/api/v1" required>
                 </div>
                 <div class="relative rounded-md rounded-t-none px-3 pb-1.5 pt-2.5 w-1/2 ring-1 ring-inset ring-gray-300 focus-within:z-10 focus-within:ring-2 focus-within:ring-green-600">
                     <label for="apiKey" class="block text-xs font-medium text-gray-900">API key</label>
@@ -387,52 +387,54 @@ resetBtn.addEventListener('click', (e) => {
 // Submit button
 const submitBtn = document.getElementById('submit-btn');
 const extractedInformation = [];
+let prompt_tokens = 0;
+let completion_tokens = 0;
 
-
+// Take 2
 function generateTable(headers, data, targetDiv) {
-    targetDiv.innerHTML = '';
-    const tableWrapper = document.createElement('div');
-    tableWrapper.className = 'relative overflow-x-auto shadow-md sm:rounded-lg my-4 w-full';
+    if (!targetDiv.querySelector('table')) {
+        const tableWrapper = document.createElement('div');
+        tableWrapper.className = 'relative overflow-x-auto shadow-md sm:rounded-lg my-4 w-full';
 
-    const table = document.createElement('table');
-    table.className = 'w-full text-sm text-left text-gray-500';
+        const table = document.createElement('table');
+        table.className = 'w-full text-sm text-left text-gray-500';
 
-    // Table header
-    const thead = document.createElement('thead');
-    thead.className = 'text-xs text-white uppercase bg-green-900';
-    const theadRow = document.createElement('tr');
-
-    headers.forEach(header => {
-        const th = document.createElement('th');
-        th.scope = 'col';
-        th.className = 'px-6 py-3';
-        th.textContent = header;
-        theadRow.appendChild(th);
-    });
-
-    thead.appendChild(theadRow);
-    table.appendChild(thead);
-
-    // Table body
-    const tbody = document.createElement('tbody');
-
-    data.forEach(rowData => {
-        const tr = document.createElement('tr');
-        tr.className = 'bg-white border-b hover:bg-green-50';
+        // Table header
+        const thead = document.createElement('thead');
+        thead.className = 'text-xs text-white uppercase bg-green-900';
+        const theadRow = document.createElement('tr');
 
         headers.forEach(header => {
-            const td = document.createElement('td');
-            td.className = 'px-4 py-2';
-            td.textContent = rowData[header] ?? '-';
-            tr.appendChild(td);
+            const th = document.createElement('th');
+            th.scope = 'col';
+            th.className = 'px-6 py-3';
+            th.textContent = header;
+            theadRow.appendChild(th);
         });
 
-        tbody.appendChild(tr);
+        thead.appendChild(theadRow);
+        table.appendChild(thead);
+
+        // Table body
+        const tbody = document.createElement('tbody');
+        table.appendChild(tbody);
+
+        tableWrapper.appendChild(table);
+        targetDiv.appendChild(tableWrapper);
+    }
+
+    const tbody = targetDiv.querySelector('tbody');
+    const tr = document.createElement('tr');
+    tr.className = 'bg-white border-b hover:bg-green-50';
+
+    headers.forEach(header => {
+        const td = document.createElement('td');
+        td.className = 'px-4 py-2';
+        td.textContent = data[header] ?? '-';
+        tr.appendChild(td);
     });
 
-    table.appendChild(tbody);
-    tableWrapper.appendChild(table);
-    targetDiv.appendChild(tableWrapper);
+    tbody.appendChild(tr);
 }
 
 
@@ -579,6 +581,75 @@ function generateLinkedTable(headers, data, context, targetDiv) {
 }
 
 
+function createDownloadButton() {
+    const btnContainer = document.createElement('div');
+    btnContainer.id = 'downloadBtnContainer';
+    btnContainer.className = 'flex justify-center w-full my-2';
+
+    const downloadBtn = document.createElement('button');
+    downloadBtn.className = 'inline-flex justify-center rounded-md border border-transparent bg-green-800 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2';
+    downloadBtn.textContent = 'Download as JSON';
+    downloadBtn.addEventListener('click', (e) => {
+        const modelName = pie.getModel();
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(extractedInformation, null, 2));
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", `extracted_information-${modelName}.json`);
+        dlAnchorElem.click();
+    });
+
+    btnContainer.appendChild(downloadBtn);
+    return btnContainer;
+}
+
+
+const processFiles = async (fileData) => {
+    extractedInformation.length = 0;
+    prompt_tokens = 0;
+    completion_tokens = 0;
+
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    const delayTime = 5000; // 5 seconds
+
+    let headers = [];
+
+    for (const [index, file] of fileData.entries()) {
+        try {
+            await delay(delayTime);
+            console.log(`Processing file ${file.name}...`);
+
+            let extraction = await pie.extractInformation(file.data);
+            const fileNameParts = file.name.split('.');
+            extraction = {
+                id: fileNameParts.length > 1 ? fileNameParts.slice(0, -1).join('.') : file.name,
+                ...extraction
+            };
+
+            if (headers.length === 0) {
+                headers = Object.keys(extraction);
+                generateTable(headers, extraction, resultsDiv);
+            } else {
+                generateTable(headers, extraction, resultsDiv);
+            }
+
+            extractedInformation.push(extraction);
+
+            const tokensUsed = pie.getTokensUsed();
+            prompt_tokens += tokensUsed.prompt_tokens;
+            completion_tokens += tokensUsed.completion_tokens;
+            console.log(`Tokens used: ${prompt_tokens} (prompt) + ${completion_tokens} (completion) = ${prompt_tokens + completion_tokens}`);
+
+            // Add download button after processing the first file
+            if (index === 0) {
+                resultsDiv.appendChild(createDownloadButton());
+            }
+        } catch (error) {
+            console.error(`Error processing file ${file.name}:`, error);
+        }
+    }
+};
+
+
 submitBtn.addEventListener('click', async (e) => {
     const originalHTML = submitBtn.innerHTML;
     submitBtn.innerHTML = `
@@ -600,99 +671,53 @@ submitBtn.addEventListener('click', async (e) => {
         return;
     }
 
-    extractedInformation.length = 0;
-    let promises = [];
+    try {
+        await processFiles(fileData);
 
-    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    const delayTime = 0;
+        if (extractedInformation.length === 0) {
+            throw new Error("No information could be extracted from the files.");
+        }
+    } catch (error) {
+        console.error("Error during extraction:", error);
+        alert(`An error occurred: ${error.message}`);
+    } finally {
+        submitBtn.innerHTML = originalHTML;
+        submitBtn.disabled = false;
+    }
 
-    const processFileWithDelay = async (file, delayTime) => {
-        await delay(delayTime);
-        let extraction = await pie.extractInformation(file.data);
-        const fileNameParts = file.name.split('.');
-        extraction = {
-            ['id']: fileNameParts.length > 1 ? fileNameParts.slice(0, -1).join('.') : file.name,
-            ...extraction
-        };
-        extractedInformation.push(extraction);
-    };
-
-    fileData.forEach((file, index) => {
-        let extractPromise = new Promise(async (resolve, reject) => {
-            try {
-                await processFileWithDelay(file, index * delayTime);
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        });
-
-        promises.push(extractPromise);
-    });
-
-    await Promise.all(promises);
-
-    const header = Object.keys(extractedInformation[0]);
-
-    // sort extractedInformation by id
-    extractedInformation.sort((a, b) => a.id.localeCompare(b.id));
-
-    const tableWrapper = document.createElement('div');
-    tableWrapper.className = 'flex justify-center w-full';
-    generateTable(header, extractedInformation, tableWrapper);
-    resultsDiv.appendChild(tableWrapper);
-
-    // Download button
-    const btnContainer = document.createElement('div');
-    btnContainer.className = 'flex justify-center w-full my-2';
-
-    const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'inline-flex justify-center rounded-md border border-transparent bg-green-800 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2';
-    downloadBtn.textContent = 'Download as JSON';
-    downloadBtn.addEventListener('click', (e) => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(extractedInformation, null, 2));
-        const dlAnchorElem = document.createElement('a');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", "extracted_information.json");
-        dlAnchorElem.click();
-    });
-
-    btnContainer.appendChild(downloadBtn);
-    resultsDiv.appendChild(btnContainer);
-
-    // Harmonization
-    const harmonizedData = {
-        "@context": jsonldContext,
-        "@graph": extractedInformation
-    };
-
-    const harmonizedTableWrapper = document.createElement('div');
-    harmonizedTableWrapper.className = 'flex justify-center w-full';
-    generateLinkedTable(
-        Object.keys(harmonizedData["@graph"][0]),
-        harmonizedData["@graph"],
-        harmonizedData["@context"],
-        harmonizedTableWrapper
-    );
-    standardizationDiv.appendChild(harmonizedTableWrapper);
-
-    // Download JSON-LD button
-    const harmonizedBtnContainer = document.createElement('div');
-    harmonizedBtnContainer.className = 'flex justify-center w-full my-2';
-
-    const harmonizedDownloadBtn = document.createElement('button');
-    harmonizedDownloadBtn.className = 'inline-flex justify-center rounded-md border border-transparent bg-green-800 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2';
-    harmonizedDownloadBtn.textContent = 'Download as JSON-LD';
-    harmonizedDownloadBtn.addEventListener('click', (e) => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(harmonizedData, null, 2));
-        const dlAnchorElem = document.createElement('a');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", "harmonized_data.jsonld");
-        dlAnchorElem.click();
-    });
-
-    harmonizedBtnContainer.appendChild(harmonizedDownloadBtn);
-    standardizationDiv.appendChild(harmonizedBtnContainer);
+    // // Harmonization
+    // const harmonizedData = {
+    //     "@context": jsonldContext,
+    //     "@graph": extractedInformation
+    // };
+    //
+    // const harmonizedTableWrapper = document.createElement('div');
+    // harmonizedTableWrapper.className = 'flex justify-center w-full';
+    // generateLinkedTable(
+    //     Object.keys(harmonizedData["@graph"][0]),
+    //     harmonizedData["@graph"],
+    //     harmonizedData["@context"],
+    //     harmonizedTableWrapper
+    // );
+    // standardizationDiv.appendChild(harmonizedTableWrapper);
+    //
+    // // Download JSON-LD button
+    // const harmonizedBtnContainer = document.createElement('div');
+    // harmonizedBtnContainer.className = 'flex justify-center w-full my-2';
+    //
+    // const harmonizedDownloadBtn = document.createElement('button');
+    // harmonizedDownloadBtn.className = 'inline-flex justify-center rounded-md border border-transparent bg-green-800 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2';
+    // harmonizedDownloadBtn.textContent = 'Download as JSON-LD';
+    // harmonizedDownloadBtn.addEventListener('click', (e) => {
+    //     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(harmonizedData, null, 2));
+    //     const dlAnchorElem = document.createElement('a');
+    //     dlAnchorElem.setAttribute("href", dataStr);
+    //     dlAnchorElem.setAttribute("download", `harmonized_data-${modelName}.jsonld`);
+    //     dlAnchorElem.click();
+    // });
+    //
+    // harmonizedBtnContainer.appendChild(harmonizedDownloadBtn);
+    // standardizationDiv.appendChild(harmonizedBtnContainer);
 
     submitBtn.innerHTML = originalHTML;
     submitBtn.disabled = false;
