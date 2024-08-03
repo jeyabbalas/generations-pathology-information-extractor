@@ -7,10 +7,15 @@ const systemPromptPath = BASE_URL + '/systemPrompt.txt';
 let systemPrompt;
 
 const queriesPath = BASE_URL + '/queries/';
+// const queryFiles = [
+//     'specimen.json', 'excision.json', 'tumourSize.json', 'breastCancerType.json',
+//     'lymphNodes1.json', 'ihc1.json', 'ihc2.json', 'tnmStaging.json',
+//     'icdo.json'
+// ];
 const queryFiles = [
-    'specimen.json', 'excision.json', 'tumourSize.json', 'breastCancerType.json',
-    'lymphNodes1.json', 'ihc1.json', 'ihc2.json', 'tnmStaging.json',
-    'icdo.json'
+    'specimen.json', 'excision.json', 'tumourSize.json', 'breastCancerType.json', 'dcisGrowthPattern.json',
+    'invasiveCarcinomaType.json', 'lymphNodes1.json', 'lymphNodes2.json', 'ihc1.json', 'ihc2.json',
+    'grading.json', 'tnmStaging.json', 'icdo.json'
 ];
 let queries;
 let prompts;
@@ -137,6 +142,7 @@ const manageOpenAIApiKey = {
     }
 };
 
+
 class InformationExtractor {
     constructor(openai, modelsList, temperature, seed) {
         this.openai = openai;
@@ -146,6 +152,9 @@ class InformationExtractor {
         this.seed = seed;
         this.systemPrompt = systemPrompt;
         this.prompts = prompts;
+
+        this.prompt_tokens = 0;
+        this.completion_tokens = 0;
     }
 
     static async instantiate({baseURL, apiKey, seed = 1234}) {
@@ -177,6 +186,9 @@ class InformationExtractor {
     }
 
     async extractInformation(report) {
+        this.prompt_tokens = 0;
+        this.completion_tokens = 0;
+
         const promises = this.prompts.map(prompt => this.extractInformationForPrompt(report, prompt));
         const results = await Promise.all(promises);
 
@@ -212,6 +224,8 @@ class InformationExtractor {
             match = message.match(regex);
 
             if (match) {
+                this.prompt_tokens += response.usage.prompt_tokens;
+                this.completion_tokens += response.usage.completion_tokens;
                 return JSON.parse(match[1]);
             } else {
                 attempt++;
@@ -220,6 +234,13 @@ class InformationExtractor {
 
         console.error('Failed to extract valid JSON after 3 attempts, object with all missing values.');
         return prompt.default;
+    }
+
+    getTokensUsed() {
+        return {
+            prompt_tokens: this.prompt_tokens,
+            completion_tokens: this.completion_tokens
+        };
     }
 }
 
